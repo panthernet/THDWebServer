@@ -10,6 +10,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "External", "External", "{A9
 		..\..\ThunderED_git\version.txt = ..\..\ThunderED_git\version.txt
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ThunderED", "ThunderED\ThunderED\ThunderED.csproj", "{02D89455-189F-49A1-BF54-15E862E31DC0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,9 +25,18 @@ Global
 		{C6DE37F4-AD9A-414D-AD23-15EB87D92131}.DebugNoReg|Any CPU.Build.0 = DebugNoReg|Any CPU
 		{C6DE37F4-AD9A-414D-AD23-15EB87D92131}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C6DE37F4-AD9A-414D-AD23-15EB87D92131}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02D89455-189F-49A1-BF54-15E862E31DC0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02D89455-189F-49A1-BF54-15E862E31DC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02D89455-189F-49A1-BF54-15E862E31DC0}.DebugNoReg|Any CPU.ActiveCfg = DebugNoReg|Any CPU
+		{02D89455-189F-49A1-BF54-15E862E31DC0}.DebugNoReg|Any CPU.Build.0 = DebugNoReg|Any CPU
+		{02D89455-189F-49A1-BF54-15E862E31DC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02D89455-189F-49A1-BF54-15E862E31DC0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{02D89455-189F-49A1-BF54-15E862E31DC0} = {A9A68149-0D1A-42EA-9B77-4B136A05CFC6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {19D1567C-4C60-442C-811E-EED622E50936}

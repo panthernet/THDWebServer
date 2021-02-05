@@ -58,6 +58,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ThunderED\ThunderED\ThunderED.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Update="wwwroot\Assets\logo.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
