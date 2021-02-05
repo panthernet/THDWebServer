@@ -1,0 +1,3 @@
+[submodule "ThunderED"]
+	path = ThunderED
+	url = https://github.com/panthernet/ThunderED.git
