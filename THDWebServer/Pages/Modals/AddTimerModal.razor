@@ -1,0 +1,114 @@
+﻿@using ThunderED.Modules
+@using ThunderED.Json.Internal
+
+@attribute [Authorize(Roles = CustomAuthenticationStateProvider.ROLE_TIMERS)]
+@inject ProtectedSessionStorage Store
+
+<div class="modal-content" style="width: 500px;">
+    <div class="modal-body">
+        <EditForm EditContext="_editContext" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <div>
+                <button type="button" class="custom-select btn btn-danger @(IsErrorVisible ? null : "d-none")">
+                    @ErrorText
+                </button>
+            </div>
+
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">@LM.Get("timersType")</span>
+                </div>
+                <InputSelectNumber @bind-Value="WtData.Type" class="custom-select">
+                    <option selected>...</option>
+                    <option value="1">@LM.Get("timerOffensive")</option>
+                    <option value="2">@LM.Get("timerDefensive")</option>
+                </InputSelectNumber>
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">@LM.Get("timersStage")</span>
+                </div>
+                <InputSelectNumber @bind-Value="WtData.Stage" class="custom-select">
+                    <option selected>...</option>
+                    <option value="1">@LM.Get("timerHull")</option>
+                    <option value="2">@LM.Get("timerArmor")</option>
+                    <option value="3">@LM.Get("timerShield")</option>
+                    <option value="4">@LM.Get("timerOther")</option>
+                </InputSelectNumber>
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">@LM.Get("timersLocation")</span>
+                </div>
+                <InputText @bind-Value="WtData.Location" placeholder="@LM.Get("timerTooltipLocation")" class="form-control" />
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">@LM.Get("timersOwner")</span>
+                </div>
+                <InputText @bind-Value="WtData.Owner" placeholder="@LM.Get("timerTooltipOwner")" class="form-control" />
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">@LM.Get("timersET")</span>
+                </div>
+
+                <RadzenDatePicker @bind-Value="WtData.Date" TValue="DateTime" ShowTime="true" DateFormat="@SettingsManager.Settings.Config.ShortTimeFormat" class="custom-select"/>
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">@LM.Get("timersNotes")</span>
+                </div>
+                <InputText @bind-Value="WtData.Notes" class="custom-select" />
+            </div>
+            <!--Footer-->
+        </EditForm>
+        <div class="modal-footer">
+            <button class="btn btn-success btn-block" @onclick="HandleValidSubmit">@(LM.Get(Entry == null ? "Add" : "webTimersConfirmEdit"))</button>
+            <button class="btn btn-outline-info" @onclick="OnClose">@LM.Get("Cancel")</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
+    [Parameter] public TimerItem Entry { get; set; }
+
+
+    private WebTimerData WtData { get; set; } = new WebTimerData();
+    private EditContext _editContext;
+    private string ErrorText { get; set; }
+    private bool IsErrorVisible => !string.IsNullOrEmpty(ErrorText);
+
+    void OnClose() => BlazoredModal.Cancel();
+
+    private async Task HandleValidSubmit()
+    {
+        ErrorText = null;
+        var isValid = _editContext.Validate();
+        if (isValid)
+        {
+            var user = await Store.GetAsync<WebAuthUserData>("user");
+            ErrorText = await TimersModule.SaveTimer(WtData, user);
+            if (!IsErrorVisible)
+                await BlazoredModal.Close(ModalResult.Ok(TimerItem.FromWebTimerData(WtData, user)));
+            else
+            {
+                StateHasChanged();
+            }
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        WtData.Id = 0;
+
+        if (Entry != null)
+            WtData.FromItem(Entry);
+
+        _editContext = new EditContext(WtData);
+
+        base.OnInitialized();
+    }
+}
