@@ -14,9 +14,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ThunderED", "ThunderED\ThunderED\ThunderED.csproj", "{02D89455-189F-49A1-BF54-15E862E31DC0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "hooks", "hooks", "{6AB728B0-A1EB-4EE6-951D-97B73813DCA5}"
-	ProjectSection(SolutionItems) = preProject
-		hooks\post_checkout = hooks\post_checkout
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
