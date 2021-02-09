@@ -36,11 +36,11 @@ namespace THDWebServer
             
         }
 
-        private static async Task<bool> LoadSettings()
+        private static async Task<bool> LoadConfig()
         {
             if (!File.Exists(SettingsManager.FileSettingsPath))
             {
-                var defaultFile = Path.Combine(SettingsManager.DataDirectory, "settings.def.json");
+                var defaultFile = "settings.def.json";
                 if (File.Exists(defaultFile))
                 {
                     File.Copy(defaultFile, Path.Combine(SettingsManager.DataDirectory, "settings.json"));
@@ -52,6 +52,14 @@ namespace THDWebServer
                     return false;
                 }
             }
+
+            return true;
+        }
+
+        private static async Task<bool> LoadSettings()
+        {
+            if (await LoadConfig() == false)
+                return false;
 
             //load settings
             var result = await SettingsManager.Prepare();
