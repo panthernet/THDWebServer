@@ -27,4 +27,16 @@ namespace THDWebServer.Classes
             }
         }
     }
+
+    public class WebTimerType
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class WebTimerStage
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
 }

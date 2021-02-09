@@ -9,7 +9,7 @@
     <div class="modal-body">
     @if (WtData == null)
     {
-        <p><em>Loading...</em></p>
+        <p><em>@LM.Get("webLoading")</em></p>
     }
     else
     {
@@ -22,7 +22,7 @@
                                 <RadzenLabel Text="@LM.Get("timersType")"/>
                             </div>
                             <div class="col-md-8">
-                                <RadzenDropDown @bind-Value="WtData.Type" AllowClear="true" Placeholder="Select something" Data="@_timerTypes" style="width: 100%;" TextProperty="Name" ValueProperty="Id" Name="TypeId">
+                                <RadzenDropDown @bind-Value="WtData.Type" AllowClear="true" Placeholder="" Data="@_timerTypes" style="width: 100%;" TextProperty="Name" ValueProperty="Id" Name="TypeId">
                                 </RadzenDropDown>
                             </div>
                         </div>
@@ -31,7 +31,7 @@
                                 <RadzenLabel Text="@LM.Get("timersStage")"/>
                             </div>
                             <div class="col-md-8">
-                                <RadzenDropDown @bind-Value="WtData.Stage" AllowClear="true" Placeholder="Select something" Data="@_timerStages" style="width: 100%;" TextProperty="Name" ValueProperty="Id" Name="TypeId">
+                                <RadzenDropDown @bind-Value="WtData.Stage" AllowClear="true" Placeholder="" Data="@_timerStages" style="width: 100%;" TextProperty="Name" ValueProperty="Id" Name="TypeId">
                                 </RadzenDropDown>
                             </div>
                         </div>
@@ -56,7 +56,8 @@
                                 <RadzenLabel Text="@LM.Get("timersET")"/>
                             </div>
                             <div class="col-md-8">
-                                <RadzenDatePicker style="width: 100%;" Name="Date" @bind-Value="WtData.Date" DateFormat="@SettingsManager.Settings.Config.ShortTimeFormat" ShowTime="true" TValue="DateTime"/>
+                                <RadzenDatePicker style="width: 100%;" Name="Date" @bind-Value="WtData.Date" DateFormat="@SettingsManager.Settings.Config.ShortTimeFormat" ShowTime="true" TValue="DateTime"
+                                                  Placeholder="@LM.Get("timerTooltipET")"/>
                             </div>
                         </div>
                         <div class="row">
@@ -64,7 +65,7 @@
                                 <RadzenLabel Text="@LM.Get("timersNotes")"/>
                             </div>
                             <div class="col-md-8">
-                                <RadzenTextBox style="width: 100%;" @bind-Value="WtData.Notes" Name="Notes" Placeholder="@LM.Get("timerTooltipOwner")"/>
+                                <RadzenTextBox style="width: 100%;" @bind-Value="WtData.Notes" Name="Notes" Placeholder=""/>
                             </div>
                         </div>
                     </RadzenFieldset>
@@ -73,7 +74,7 @@
             <div class="row justify-content-center">
                 <div class="col-md-12 d-flex align-items-end justify-content-center" style="margin-top: 16px;">
                     <RadzenButton ButtonType="ButtonType.Submit" Icon="save" Text="@(LM.Get(Entry == null ? "Add" : "webTimersConfirmEdit"))" />
-                    <RadzenButton ButtonStyle="ButtonStyle.Light" Icon="cancel" style="display: inline-block; margin-left: 10px;" Text="@LM.Get("Cancel")" Click="@OnClose" />
+                    <RadzenButton ButtonStyle="ButtonStyle.Light" style="display: inline-block; margin-left: 10px;" Text="@LM.Get("Cancel")" Click="@OnClose" />
                 </div>
             </div>
         </RadzenTemplateForm>
@@ -88,7 +89,6 @@
 
 
     private WebTimerData WtData { get; set; } = new WebTimerData();
-    private EditContext _editContext;
     private string ErrorText { get; set; }
     private bool IsErrorVisible => !string.IsNullOrEmpty(ErrorText);
 
@@ -106,36 +106,10 @@
         new WebTimerStage { Id = 4, Name = LM.Get("timerOther")}
     };
 
-    private class WebTimerType
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-    }
 
-    private class WebTimerStage
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-    }
 
     void OnClose() => BlazoredModal.Cancel();
 
-    private async Task HandleValidSubmit()
-    {
-        ErrorText = null;
-        var isValid = _editContext.Validate();
-        if (isValid)
-        {
-            var user = await Store.GetAsync<WebAuthUserData>("user");
-            ErrorText = await TimersModule.SaveTimer(WtData, user);
-            if (!IsErrorVisible)
-                await BlazoredModal.Close(ModalResult.Ok(TimerItem.FromWebTimerData(WtData, user)));
-            else
-            {
-                StateHasChanged();
-            }
-        }
-    }
 
     protected override void OnInitialized()
     {
@@ -144,7 +118,6 @@
         if (Entry != null)
             WtData.FromItem(Entry);
 
-        _editContext = new EditContext(WtData);
 
         base.OnInitialized();
     }

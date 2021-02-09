@@ -5,7 +5,6 @@
 @using ThunderED.Json.Internal
 @using ThunderED.Modules
 @using THDWebServer.Pages.Modals
-@using Matrix.Util
 @inject AuthenticationStateProvider Auth
 @inject ProtectedSessionStorage Store
 @inject IModalService Modal
@@ -16,11 +15,14 @@
     <div class="colorifier text-center"style="margin-bottom: 20px;">
         <h3>@LM.Get("timersTemplateHeader")</h3>
     </div>
-
-    <div>
-        <button class="btn btn-primary @(_isEditor ? null : "d-none")" @onclick="ShowAddTimer">@LM.Get("timersAddHeader")</button>
-        <button class="btn btn-primary @(_isEditor ? null : "d-none")" @onclick="ShowAddTimerRf">@LM.Get("timersAddRfHeader")</button>
-    </div>
+    
+    @if (_isEditor)
+    {
+        <div style="margin-bottom: 5px;">
+            <RadzenButton ButtonType="ButtonType.Button" Click="async () => await ShowAddTimer()" Text="@(LM.Get("timersAddHeader"))"/>
+            <RadzenButton ButtonType="ButtonType.Button" Click="async () => await ShowAddTimerRf()" Text="@(LM.Get("timersAddRfHeader"))"/>
+        </div>
+    }
 
     <div>
         <RadzenGrid AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowPaging="true" PageSize="10"
@@ -93,9 +95,11 @@
 
     private async Task ShowAddTimerRf()
     {
-        var o = new ModalOptions { DisableBackgroundCancel = true };
+        var o = new ModalOptions { DisableBackgroundCancel = true, HideHeader = true };
+        var p = new ModalParameters();
+        p.Add("Header", LM.Get("timersAddHeader"));
 
-        var result = await Modal.Show<AddRFTimerModal>(LM.Get("timersAddHeader"), o).Result;
+        var result = await Modal.Show<AddRFTimerModal>(LM.Get("timersAddHeader"), p, o).Result;
 
         if (!result.Cancelled)
         {
@@ -149,7 +153,7 @@
         var o = new ModalOptions { DisableBackgroundCancel = true, HideHeader = true};
         var parameters = new ModalParameters();
         parameters.Add("Entry", timer);
-        parameters.Add("Header", LM.Get("timersAddHeader"));
+        parameters.Add("Header", LM.Get("webTimersEditHeader"));
 
         await _ordersGrid.EditRow(timer);
 
@@ -172,8 +176,7 @@
 
     private void CancelEditRow(TimerItem order)
     {
-        if(_editingRow == null) return;
-        _ordersGrid.CancelEditRow(_editingRow);
+        _ordersGrid.CancelEditRow(order);
         _timers.ReplaceItem(_editingRow);
         _editingRow = null;
     }
