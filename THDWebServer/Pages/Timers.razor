@@ -172,6 +172,7 @@
 
     private void CancelEditRow(TimerItem order)
     {
+        if(_editingRow == null) return;
         _ordersGrid.CancelEditRow(_editingRow);
         _timers.ReplaceItem(_editingRow);
         _editingRow = null;
