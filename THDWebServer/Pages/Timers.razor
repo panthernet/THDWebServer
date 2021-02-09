@@ -78,9 +78,11 @@
 
     private async Task ShowAddTimer()
     {
-        var o = new ModalOptions { DisableBackgroundCancel = true };
+        var o = new ModalOptions { DisableBackgroundCancel = true, HideHeader = true };
+        var p = new ModalParameters();
+        p.Add("Header", LM.Get("timersAddHeader"));
 
-        var result = await Modal.Show<AddTimerModal>(LM.Get("timersAddHeader"), o).Result;
+        var result = await Modal.Show<AddTimerModal>(LM.Get("timersAddHeader"),p, o).Result;
 
         if (!result.Cancelled)
         {
@@ -144,9 +146,10 @@
     {
         _editingRow = timer.Clone();
 
-        var o = new ModalOptions { DisableBackgroundCancel = true };
+        var o = new ModalOptions { DisableBackgroundCancel = true, HideHeader = true};
         var parameters = new ModalParameters();
         parameters.Add("Entry", timer);
+        parameters.Add("Header", LM.Get("timersAddHeader"));
 
         await _ordersGrid.EditRow(timer);
 
