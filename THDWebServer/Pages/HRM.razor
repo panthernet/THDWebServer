@@ -213,6 +213,7 @@ var user = new WebAuthUserData(new AuthUserEntity { CharacterId = 1731524545 }, 
 
     private async Task LoadAuthUsers(LoadDataArgs args)
     {
+        if (_module == null) return;
         var ini = await _module.WebGetUsers(UserStatusEnum.Authed, _access);
         var query = ini.AsQueryable();
         if (!string.IsNullOrEmpty(args.Filter))
@@ -232,6 +233,7 @@ var user = new WebAuthUserData(new AuthUserEntity { CharacterId = 1731524545 }, 
 
     private async Task LoadAwaitingUsers(LoadDataArgs args)
     {
+        if (_module == null) return;
         var ini = await _module.WebGetUsers(UserStatusEnum.Awaiting, _access);
         var query = ini.AsQueryable();
         if (!string.IsNullOrEmpty(args.Filter))
@@ -251,6 +253,7 @@ var user = new WebAuthUserData(new AuthUserEntity { CharacterId = 1731524545 }, 
 
     private async Task LoadDumpedUsers(LoadDataArgs args)
     {
+        if (_module == null) return;
         var ini = await _module.WebGetUsers(UserStatusEnum.Dumped, _access);
         var query = ini.AsQueryable();
         if (!string.IsNullOrEmpty(args.Filter))
@@ -270,6 +273,7 @@ var user = new WebAuthUserData(new AuthUserEntity { CharacterId = 1731524545 }, 
 
     private async Task LoadSpyUsers(LoadDataArgs args)
     {
+        if (_module == null) return;
         var ini = await _module.WebGetUsers(UserStatusEnum.Spying, _access);
         var query = ini.AsQueryable();
         if (!string.IsNullOrEmpty(args.Filter))

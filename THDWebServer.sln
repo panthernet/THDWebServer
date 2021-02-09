@@ -8,7 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "External", "External", "{A9A68149-0D1A-42EA-9B77-4B136A05CFC6}"
 	ProjectSection(SolutionItems) = preProject
 		Dockerfile = Dockerfile
-		..\..\ThunderED_git\version.txt = ..\..\ThunderED_git\version.txt
+		..\ThunderED_git\version.txt = ..\ThunderED_git\version.txt
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ThunderED", "ThunderED\ThunderED\ThunderED.csproj", "{02D89455-189F-49A1-BF54-15E862E31DC0}"

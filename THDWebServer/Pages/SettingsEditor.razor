@@ -188,7 +188,11 @@
             _authGroupsList = _module.WebGetAuthGroupsList();
             //_authRolesList = .ToList();
             var counter = 0;
-            _authRolesList2 = _module.WebGetAuthRolesList().Select(a => new TestClass {Id = counter++, Name = a}).ToList();
+            _authRolesList2 = _module.WebGetAuthRolesList()?.Select(a => new TestClass {Id = counter++, Name = a}).ToList();
+            if (_authRolesList2 == null)
+            {
+                _authRolesList2 = new List<TestClass>{ new TestClass { Id = 0, Name = "Unknown"}};
+            }
         }
         if (_access.CanEditTimers)
         {
