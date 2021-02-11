@@ -298,6 +298,45 @@
                                 }
                             </RadzenTabsItem>
                         }
+                        @if (SettingsManager.HasCharWalletScope(_character?.Data.PermissionsList) && _hasToken)
+                        {
+                            <RadzenTabsItem Text="@LM.Get("hrmTabTransfers")">
+                                <RadzenGrid AllowFiltering="true" AllowPaging="true" PageSize="30" Count="@_countWalletTrans" AllowSorting="true" Data="@_walletTransList" TItem="WebWalletTrans"
+                                            LoadData="@LoadWalletTransData" Style="height: 320px;">
+                                    <Columns>
+                                        <RadzenGridColumn TItem="WebWalletTrans" Title="@LM.Get("hrmTransDateHeader")" FilterProperty="Date">
+                                            <Template Context="order">
+                                                <RadzenLabel Text="@order.Date.ToString(SettingsManager.Settings.Config.ShortTimeFormat)" />
+                                            </Template>
+                                        </RadzenGridColumn>
+                                        <RadzenGridColumn TItem="WebWalletTrans" Title="@LM.Get("hrmTransTypeHeader")" FilterProperty="Type">
+                                            <Template Context="order">
+                                                <RadzenLabel Text="@order.Type" />
+                                            </Template>
+                                        </RadzenGridColumn>
+                                        <RadzenGridColumn TItem="WebWalletTrans" Title="@LM.Get("hrmTransCreditHeader")" FilterProperty="Credit">
+                                            <Template Context="order">
+                                                <RadzenLabel Text="@(order.Credit.ToString("N"))" />
+                                            </Template>
+                                        </RadzenGridColumn>
+                                        <RadzenGridColumn TItem="WebWalletTrans" Title="@LM.Get("hrmTransClientHeader")" FilterProperty="Client">
+                                            <Template Context="order">
+                                                <RadzenLabel Text="@(order.Client)" />
+                                            </Template>
+                                        </RadzenGridColumn>
+                                        <RadzenGridColumn TItem="WebWalletTrans" Title="@LM.Get("hrmTransWhereHeader")" FilterProperty="Where">
+                                            <Template Context="order">
+                                                <RadzenLabel Text="@(order.Where)" />
+                                            </Template>
+                                        </RadzenGridColumn>
+                                    </Columns>
+                                </RadzenGrid>
+                                @if (_isWalletTransLoading)
+                                {
+                                    <RadzenLabel Text="@LM.Get("webLoading")" Class="hrmLoadingTabText" />
+                                }
+                            </RadzenTabsItem>
+                        }
                         @if (SettingsManager.HasCharSkillsScope(_character?.Data.PermissionsList) && _hasToken)
                         {
                             <RadzenTabsItem Text="@LM.Get("hrmTabSkills")">
@@ -482,7 +521,7 @@
                     {
                         var values = await _module.WebGetSkills(_character.CharacterId, _inspectToken);
                         _skillsListCache = _skillsList = values[1] as List<WebSkillItem>;
-                        _totalSp = ((int) values[0]).ToString("N0");
+                        _totalSp = ((int)values[0]).ToString("N0");
 
                         await InvokeAsync(StateHasChanged);
                     });
@@ -539,6 +578,15 @@
         if (_walletJournalListCache == null) return;
         _walletJournalList = ApplyAjaxFilters(_walletJournalListCache, args, out _countWalletJournal);
         _isWalletJournalLoading = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoadWalletTransData(LoadDataArgs args)
+    {
+        _walletTransListCache ??= await _module.WebGetWalletTrans(_character.CharacterId, _inspectToken);
+        if (_walletTransListCache == null) return;
+        _walletTransList = ApplyAjaxFilters(_walletTransListCache, args, out _countWalletTrans);
+        _isWalletTransLoading = false;
         await InvokeAsync(StateHasChanged);
     }
 
