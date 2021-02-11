@@ -174,15 +174,9 @@ app {
     }
 }
 
-@media (min-height: 400px) {
-    .hrm-inspect {
-        height: 350px;
-    }
-}
-
 @media (min-height: 768px) {
     .hrm-inspect {
-        height: 700px;
+        height: 720px;
     }
 }
 

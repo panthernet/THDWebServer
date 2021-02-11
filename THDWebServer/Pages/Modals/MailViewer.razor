@@ -1,30 +1,73 @@
 ﻿@using ThunderED.Modules
 @using ThunderED.Helpers
-@using ThunderED.Json
+
+<style type="text/css">
+    .rz-html-editor-content {
+        background-color: #252526 !important;
+        text-align: initial;
+        color: white !important;
+    }
+
+    .rz-html-editor-toolbar {
+        display: none !important;
+    }
+
+    .modal-footer {
+        padding: .5rem !important;
+    }
+
+</style>
+
 <div class="modal-content text-center">
     <!--Body-->
     <div class="modal-body">
-        <RadzenCard Style="width:600px; margin-bottom: 20px; height:500px;">
+        <RadzenFieldset Style="width:600px; height:500px;" Text="@(LM.Get("mailMsgTitle", Mail?.From))">
             <div class="row">
-                <div class="col-md-6">
-                    <div>@LM.Get("mailDateHeader"): <b>@Mail?.Date</b></div>
-                    <div style="margin-top:2px">@LM.Get("mailFromHeader"): <b>@Mail?.Date</b></div>
-                    <div style="margin-top:2px">@LM.Get("mailSubjectHeader"): <b>@Mail?.Header</b></div>
-                    <div style="margin-top:2px">@LM.Get("TextHeader"): </div>
+                <div class="col-md-4 align-items-center d-flex">
+                    <RadzenLabel Text="@LM.Get("mailDateHeader")" />
+                </div>
+                <div class="col-md-8 text-left">
+                    <RadzenLabel Text="@Mail?.Date" />
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-6">
-                    Mail?.Content
+                <div class="col-md-4 align-items-center d-flex">
+                    <RadzenLabel Text="@LM.Get("mailFromHeader")" />
+                </div>
+                <div class="col-md-8 text-left">
+                    <RadzenLabel Text="@Mail?.From" />
                 </div>
             </div>
-        </RadzenCard>
-
+            <div class="row">
+                <div class="col-md-4 align-items-center d-flex">
+                    <RadzenLabel Text="@LM.Get("mailSubjectHeader")" />
+                </div>
+                <div class="col-md-8 text-left">
+                    <RadzenLabel Text="@Mail?.Header" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 align-items-center d-flex">
+                    <RadzenLabel Text="@LM.Get("mailTextHeader")" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="d-flex">
+                    @if (Mail != null)
+                    {
+                        <RadzenHtmlEditor @bind-Value="Mail.Content" style="height: 360px; width: 590px; margin-bottom: .5rem;"
+                                           Disabled="true">
+                            <RadzenHtmlEditorBackground/>
+                        </RadzenHtmlEditor>
+                    }
+                </div>
+            </div>
+        </RadzenFieldset>
     </div>
 
     <!--Footer-->
     <div class="modal-footer flex-center">
-        <button class="btn btn-outline-info waves-effect" @onclick="OnClose">@LM.Get("close")</button>
+        <button class="btn btn-outline-info" @onclick="OnClose">@LM.Get("close")</button>
     </div>
 </div>
 
@@ -40,33 +83,39 @@
 
     private WebMailContent Mail { get; set; }
 
-    void OnClose() => BlazoredModal.Cancel();
+    async Task OnClose() => await BlazoredModal.CancelAsync();
 
     protected override async Task OnInitializedAsync()
     {
-
-        var mail = await APIHelper.ESIAPI.GetMail("HRM", UserId, Token, MailId);
-
-        var from = await APIHelper.ESIAPI.GetCharacterData("HRM", mail.@from);
-        var corpHistory = await APIHelper.ESIAPI.GetCharCorpHistory("HRM", mail.@from);
-        var date = DateTime.Parse(mail.timestamp);
-        var corp = corpHistory.OrderByDescending(a => a.Date)
-            .FirstOrDefault(a => date >= a.Date);
-        var fromCorp = corp == null
-            ? null
-            : await APIHelper.ESIAPI.GetCorporationData("HRM", corp.corporation_id);
-        var corpText = fromCorp == null
-            ? null
-            : $" - {fromCorp.name}[{fromCorp.ticker}]";
-        var sList = await MailModule.PrepareBodyMessage(mail.body, true);
-
-        Mail = new WebMailContent
+        try
         {
-            Date = date.ToString(SettingsManager.Settings.Config.ShortTimeFormat),
-            From = $"{@from?.name}{corpText}",
-            Header = mail.subject,
-            Content = sList[0]
-        };
+            var mail = await APIHelper.ESIAPI.GetMail("HRM", UserId, Token, MailId);
+
+            var from = await APIHelper.ESIAPI.GetCharacterData("HRM", mail.@from);
+            var corpHistory = await APIHelper.ESIAPI.GetCharCorpHistory("HRM", mail.@from);
+            var date = DateTime.Parse(mail.timestamp);
+            var corp = corpHistory.OrderByDescending(a => a.Date)
+                .FirstOrDefault(a => date >= a.Date);
+            var fromCorp = corp == null
+                ? null
+                : await APIHelper.ESIAPI.GetCorporationData("HRM", corp.corporation_id);
+            var corpText = fromCorp == null
+                ? null
+                : $" - {fromCorp.name}[{fromCorp.ticker}]";
+            var sList = await MailModule.PrepareBodyMessage(mail.body, true, true);
+
+            Mail = new WebMailContent
+            {
+                Date = date.ToString(SettingsManager.Settings.Config.ShortTimeFormat),
+                From = $"{@from?.name}{corpText}",
+                Header = mail.subject,
+                Content = sList[0]
+            };
+        }
+        catch (Exception ex)
+        {
+            await LogHelper.LogEx(ex, LogCat.Mail);
+        }
 
         await base.OnInitializedAsync();
     }

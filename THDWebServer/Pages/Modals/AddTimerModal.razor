@@ -108,7 +108,7 @@
 
 
 
-    void OnClose() => BlazoredModal.Cancel();
+    async Task OnClose() => await BlazoredModal.CancelAsync();
 
 
     protected override void OnInitialized()
@@ -129,7 +129,7 @@
             var user = await Store.GetAsync<WebAuthUserData>("user");
             ErrorText = await TimersModule.SaveTimer(WtData, user);
             if (!IsErrorVisible)
-                await BlazoredModal.Close(ModalResult.Ok(TimerItem.FromWebTimerData(WtData, user)));
+                await BlazoredModal.CloseAsync(ModalResult.Ok(TimerItem.FromWebTimerData(WtData, user)));
             else
             {
                 await InvokeAsync(StateHasChanged);

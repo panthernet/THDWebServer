@@ -9,13 +9,14 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using THDWebServer.Classes;
 using THDWebServer.Classes.Services;
 using ThunderED.Classes;
 using ThunderED.Helpers;
 
 namespace THDWebServer
 {
-    public class Program
+    public partial class Program
     {
         public static async Task Main(string[] args)
         {
@@ -59,6 +60,9 @@ namespace THDWebServer
         private static async Task<bool> LoadSettings()
         {
             if (await LoadConfig() == false)
+                return false;
+
+            if (!await WebConfig.Load("webconfig.json"))
                 return false;
 
             //load settings

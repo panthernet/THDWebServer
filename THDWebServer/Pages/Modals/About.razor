@@ -21,7 +21,7 @@
     public string Message { get; set; }
     public string Message2 { get; set; }
 
-    void OnClose() => BlazoredModal.Cancel();
+    async Task OnClose() => await BlazoredModal.CancelAsync();
 
     protected override void OnInitialized()
     {

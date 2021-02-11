@@ -3,6 +3,7 @@
 @using ThunderED.Json
 @using ThunderED.Classes.Entities
 @using System.Linq.Dynamic.Core
+@using Microsoft.AspNetCore.Html
 
 @inject AuthenticationStateProvider Auth
 @inject ProtectedSessionStorage Store
@@ -12,8 +13,8 @@
 
 <div class="modal-content hrm-inspect">
     <div class="modal-header">
-        <h5 class="modal-title">Inspection</h5>
-        <button type="button" class="close" aria-label="Close" @onclick="Close">
+        <h5 class="modal-title">@LM.Get("hrmInspectingHeader", MemberData?.CharacterName)</h5>
+        <button type="button" class="close" @onclick="Close">
             <span aria-hidden="true">&times;</span>
         </button>
     </div>
@@ -69,25 +70,25 @@
                     <div class="row-fluid">
                         @LM.Get("hrmInspectBirth"):&nbsp; @_character?.MiscData.BirthDate.ToString(_module.Settings.Config.ShortTimeFormat)
                     </div>
-                    @if (SettingsManager.HasCharSkillsScope(_character?.Data.PermissionsList))
+                    @if (SettingsManager.HasCharSkillsScope(_character?.Data.PermissionsList) && _hasToken)
                     {
                         <div class="row-fluid">
                             SP:&nbsp; @_totalSp
                         </div>
                     }
-                    @if (SettingsManager.HasCharWalletScope(_character?.Data.PermissionsList))
+                    @if (SettingsManager.HasCharWalletScope(_character?.Data.PermissionsList) && _hasToken)
                     {
                         <div class="row-fluid">
                             ISK:&nbsp; @_totalIskBalance
                         </div>
                     }
-                    @if (SettingsManager.HasCharLocationScope(_character?.Data.PermissionsList))
+                    @if (SettingsManager.HasCharLocationScope(_character?.Data.PermissionsList) && _hasToken)
                     {
                         <div class="row-fluid">
                             @LM.Get("hrmInspectLocation"):&nbsp; @_locationData
                         </div>
                     }
-                    @if (SettingsManager.HasCharShipTypeScope(_character?.Data.PermissionsList))
+                    @if (SettingsManager.HasCharShipTypeScope(_character?.Data.PermissionsList) && _hasToken)
                     {
                         <div class="row-fluid">
                             @LM.Get("hrmInspectShip"):&nbsp; @_shipData
@@ -129,12 +130,16 @@
                                     </RadzenGridColumn>
                                 </Columns>
                             </RadzenGrid>
+                            @if (_isCorpsLoading)
+                            {
+                                <RadzenLabel Text="@LM.Get("webLoading")" Class="hrmLoadingTabText" />
+                            }
                         </RadzenTabsItem>
-                        @if (SettingsManager.HasReadMailScope(_character?.Data.PermissionsList))
+                        @if (SettingsManager.HasReadMailScope(_character?.Data.PermissionsList) && _hasToken)
                         {
                             <RadzenTabsItem Text="@LM.Get("hrmTabMail")">
                                 <RadzenGrid AllowFiltering="true" AllowPaging="true" PageSize="20" Count="@_countMail" AllowSorting="true" Data="@_mailList" TItem="WebMailHeader"
-                                            LoadData="@LoadMailData" Style="height: 320px;" RowDoubleClick="args=> OnMailRowClick(args)">
+                                            LoadData="@LoadMailData" Style="height: 320px;" RowDoubleClick="async args=> await OnMailRowClick(args)">
                                     <Columns>
                                         <RadzenGridColumn TItem="WebMailHeader" Title="@LM.Get("mailSubjectHeader")">
                                             <Template Context="order">
@@ -164,7 +169,7 @@
                                 }
                             </RadzenTabsItem>
                         }
-                        @if (SettingsManager.HasCharContractsScope(_character?.Data.PermissionsList))
+                        @if (SettingsManager.HasCharContractsScope(_character?.Data.PermissionsList) && _hasToken)
                         {
                             <RadzenTabsItem Text="@LM.Get("hrmTabContracts")">
                                 <RadzenGrid AllowFiltering="true" AllowPaging="true" PageSize="30" Count="@_countContracts" AllowSorting="true" Data="@_contractsList" TItem="WebContract"
@@ -220,7 +225,7 @@
                                 }
                             </RadzenTabsItem>
                         }
-                        @if (SettingsManager.HasCharContactsScope(_character?.Data.PermissionsList))
+                        @if (SettingsManager.HasCharContactsScope(_character?.Data.PermissionsList) && _hasToken)
                         {
                             <RadzenTabsItem Text="@LM.Get("hrmTabContacts")">
                                 <RadzenGrid AllowFiltering="true" AllowPaging="true" PageSize="30" Count="@_countContacts" AllowSorting="true" Data="@_contactsList" TItem="WebContact"
@@ -259,7 +264,7 @@
                                 }
                             </RadzenTabsItem>
                         }
-                        @if (SettingsManager.HasCharWalletScope(_character?.Data.PermissionsList))
+                        @if (SettingsManager.HasCharWalletScope(_character?.Data.PermissionsList) && _hasToken)
                         {
                             <RadzenTabsItem Text="@LM.Get("hrmTabJournal")">
                                 <RadzenGrid AllowFiltering="true" AllowPaging="true" PageSize="30" Count="@_countWalletJournal" AllowSorting="true" Data="@_walletJournalList" TItem="WebWalletJournal"
@@ -282,12 +287,40 @@
                                         </RadzenGridColumn>
                                         <RadzenGridColumn TItem="WebWalletJournal" Title="@LM.Get("hrmJournalDescription")">
                                             <Template Context="order">
-                                                <div style="position: relative;">@order.Description</div>
+                                                <div style="position: relative;" tooltip="@order.Description">@order.Description</div>
                                             </Template>
                                         </RadzenGridColumn>
                                     </Columns>
                                 </RadzenGrid>
                                 @if (_isWalletJournalLoading)
+                                {
+                                    <RadzenLabel Text="@LM.Get("webLoading")" Class="hrmLoadingTabText" />
+                                }
+                            </RadzenTabsItem>
+                        }
+                        @if (SettingsManager.HasCharSkillsScope(_character?.Data.PermissionsList) && _hasToken)
+                        {
+                            <RadzenTabsItem Text="@LM.Get("hrmTabSkills")">
+                                <RadzenGrid AllowFiltering="true" AllowPaging="true" PageSize="30" Count="@_countSkillsList" AllowSorting="false" Data="@_skillsList" TItem="WebSkillItem"
+                                            LoadData="@LoadSkillsData" Style="height: 320px;" AllowColumnResize="true">
+                                    <Columns>
+                                        <RadzenGridColumn TItem="WebSkillItem" Title="@LM.Get("hrmSkillName")" FilterProperty="Name">
+                                            <Template Context="order">
+                                                <RadzenLabel Text="@order.Name" Style="@($"color: {(order.IsCategory ? "gray":"black")};")" />
+                                            </Template>
+                                        </RadzenGridColumn>
+                                        <RadzenGridColumn TItem="WebSkillItem" Title="@LM.Get("hrmSkillLevel")" FilterProperty="ValueTrained"
+                                                          Width="120">
+                                            <Template Context="order">
+                                                @if (!order.IsCategory)
+                                                {
+                                                    @((MarkupString) order.Visual)
+                                                }
+                                            </Template>
+                                        </RadzenGridColumn>
+                                    </Columns>
+                                </RadzenGrid>
+                                @if (_isSkillsListLoading)
                                 {
                                     <RadzenLabel Text="@LM.Get("webLoading")" Class="hrmLoadingTabText" />
                                 }
@@ -328,20 +361,24 @@
     private List<WebContact> _contactsList;
     private List<WebWalletTrans> _walletTransList;
     private List<WebWalletJournal> _walletJournalList;
+    private List<WebSkillItem> _skillsList;
 
     #region Grid vars
 
+    private bool _isCorpsLoading = true;
     private bool _isMailLoading = true;
     private bool _isContractsLoading = true;
     private bool _isContactsLoading = true;
     private bool _isWalletTransLoading = true;
     private bool _isWalletJournalLoading = true;
+    private bool _isSkillsListLoading = true;
 
     private int _countMail;
     private int _countContacts;
     private int _countContracts;
     private int _countWalletTrans;
     private int _countWalletJournal;
+    private int _countSkillsList;
 
     #endregion
 
@@ -351,6 +388,7 @@
     private List<WebContact> _contactsListCache;
     private List<WebWalletTrans> _walletTransListCache;
     private List<WebWalletJournal> _walletJournalListCache;
+    private List<WebSkillItem> _skillsListCache;
     #endregion
 
     protected override async Task OnInitializedAsync()
@@ -414,42 +452,75 @@
                 _module.Settings.WebServerModule.CcpAppClientId,
                 _module.Settings.WebServerModule.CcpAppSecret, $"From {_reason} | Char ID: {_character.CharacterId} | Char name: {_character.Data.CharacterName}");
             _inspectToken = tq.Result;
-
-            if (SettingsManager.HasCharLocationScope(_character.Data.PermissionsList))
+            if (!string.IsNullOrEmpty(_inspectToken))
             {
-                var locationData =
-                    await APIHelper.ESIAPI.GetCharacterLocation(_reason, _character.CharacterId, _inspectToken);
-                var system =
-                    await APIHelper.ESIAPI.GetSystemData(_reason, locationData.solar_system_id);
-                var station = locationData.station_id > 0 ? await APIHelper.ESIAPI.GetStationData(_reason, locationData.station_id, _inspectToken)
-                    : null;
-                var citadel = locationData.structure_id > 0 ? await APIHelper.ESIAPI.GetStructureData(_reason, locationData.structure_id, _inspectToken)
-                    : null;
-                var loc = station != null ? station.name : citadel?.name;
 
-                _locationData = $"{system.name} {loc}";
+                if (SettingsManager.HasCharLocationScope(_character.Data.PermissionsList))
+                {
+                    var locationData =
+                        await APIHelper.ESIAPI.GetCharacterLocation(_reason, _character.CharacterId, _inspectToken);
+                    var system =
+                        await APIHelper.ESIAPI.GetSystemData(_reason, locationData?.solar_system_id ?? 0);
+                    var station = locationData.station_id > 0 ? await APIHelper.ESIAPI.GetStationData(_reason, locationData.station_id, _inspectToken)
+                        : null;
+                    var citadel = locationData.structure_id > 0 ? await APIHelper.ESIAPI.GetStructureData(_reason, locationData.structure_id, _inspectToken)
+                        : null;
+                    var loc = station != null ? station.name : citadel?.name;
+
+                    _locationData = $"{system.name} {loc}";
+                }
+                if (SettingsManager.HasCharShipTypeScope(_character.Data.PermissionsList))
+                {
+                    var stData =
+                        await APIHelper.ESIAPI.GetCharacterShipType(_reason, _character.CharacterId, _inspectToken);
+                    var tType = await APIHelper.ESIAPI.GetTypeId(_reason, stData.ship_type_id);
+                    _shipData = tType.name;
+                }
+                if (SettingsManager.HasCharSkillsScope(_character.Data.PermissionsList))
+                {
+                    await Task.Factory.StartNew(async () =>
+                    {
+                        var values = await _module.WebGetSkills(_character.CharacterId, _inspectToken);
+                        _skillsListCache = _skillsList = values[1] as List<WebSkillItem>;
+                        _totalSp = ((int) values[0]).ToString("N0");
+
+                        await InvokeAsync(StateHasChanged);
+                    });
+
+                }
+                await LoadWalletData();
+                await InvokeAsync(StateHasChanged);
             }
-            if (SettingsManager.HasCharShipTypeScope(_character.Data.PermissionsList))
+            else
             {
-                var stData =
-                    await APIHelper.ESIAPI.GetCharacterShipType(_reason, _character.CharacterId, _inspectToken);
-                var tType = await APIHelper.ESIAPI.GetTypeId(_reason, stData.ship_type_id);
-                _shipData = tType.name;
+                _hasToken = false;
+                _character.RefreshToken = null;
             }
-            await LoadWalletData();
-            await InvokeAsync(StateHasChanged);
         }
     }
 
-    private async Task LoadSkillsData()
+    private async Task LoadSkillsData(LoadDataArgs args)
     {
-        if (_hasToken && SettingsManager.HasCharSkillsScope(_character.Data.PermissionsList))
+        if (_skillsListCache == null)
         {
-            var skills =
-                await APIHelper.ESIAPI.GetCharSkills(_reason, _character.Id, _inspectToken);
-            _totalSp = skills.total_sp.ToString("N0");
-            await InvokeAsync(StateHasChanged);
+            var count = 0;
+            while (count < 10)
+            {
+                if (_skillsListCache == null)
+                {
+                    await Task.Delay(1000);
+                    count++;
+                }
+                else break;
+            }
+            if (count >= 10)
+                return;
         }
+
+        _skillsList = ApplyAjaxFilters(_skillsListCache, args, out _countSkillsList);
+        _isSkillsListLoading = false;
+
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task LoadWalletData()
@@ -483,6 +554,7 @@
     private async Task LoadCorpHistoryData(LoadDataArgs args)
     {
         _corpHistoryList = ApplyAjaxFilters(await _module.WebGenerateCorpHistory(_character.CharacterId), args, out _);
+        _isCorpsLoading = false;
         await InvokeAsync(StateHasChanged);
     }
 
@@ -511,8 +583,13 @@
 
     private async void ExecuteKickUser()
     {
-        if (await Modal.ShowConfirm(LM.Get("Warning"), LM.Get("hrmButDeleteUserAuthConfirm")))
-            await _module.WebDeleteUser(MemberData);
+        if (await Modal.ShowConfirm(LM.Get("webWarning"), LM.Get("hrmButDeleteUserAuthConfirm")))
+        {
+            if (await _module.WebDeleteUser(MemberData))
+            {
+                await BlazoredModal.CloseAsync(ModalResult.Ok(false));
+            }
+        }
     }
 
     private List<T> ApplyAjaxFilters<T>(IEnumerable<T> list, LoadDataArgs args, out int count)
@@ -531,15 +608,17 @@
         return query.ToList();
     }
 
-    async Task Close() => await BlazoredModal.Close(ModalResult.Ok(true));
+    async Task Close() => await BlazoredModal.CloseAsync(ModalResult.Ok(true));
 
-    private void OnMailRowClick(WebMailHeader args)
+    private async Task OnMailRowClick(WebMailHeader args)
     {
         var prms = new ModalParameters();
         prms.Add("MailId", args.MailId);
-        prms.Add("UserId", _character.Id);
+        prms.Add("UserId", _character.CharacterId);
         prms.Add("Token", _inspectToken);
         var o = new ModalOptions { DisableBackgroundCancel = false, Animation = ModalAnimation.FadeIn(1), HideHeader = true, ContentScrollable = true };
-        Modal.Show<MailViewer>("null", prms, o);
+        await Modal.Show<MailViewer>("null", prms, o).Result;
     }
+
+
 }

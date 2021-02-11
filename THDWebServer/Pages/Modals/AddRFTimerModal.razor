@@ -108,7 +108,7 @@
         new WebTimerStage { Id = 4, Name = LM.Get("timerOther")}
     };
 
-    void OnClose() => BlazoredModal.Cancel();
+    async Task OnClose() => await BlazoredModal.CancelAsync();
 
     private async Task HandleValidSubmit(WebTimerData t)
     {
@@ -121,7 +121,7 @@
             if (!IsErrorVisible)
             {
                 WtData.PushDate();
-                await BlazoredModal.Close(ModalResult.Ok(TimerItem.FromWebTimerData(WtData, user)));
+                await BlazoredModal.CloseAsync(ModalResult.Ok(TimerItem.FromWebTimerData(WtData, user)));
             }
             else
             {

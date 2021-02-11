@@ -1,6 +1,6 @@
 ﻿@page "/hrm"
 @using ThunderED.Modules
-@using ThunderED.Classes.Entities
+
 @using ThunderED.Classes.Enums
 @using System.Linq.Dynamic.Core
 @using THDWebServer.Pages.Modals
@@ -21,177 +21,216 @@
                             @if (_access.IsAuthedUsersVisible)
                             {
                                 <RadzenTabsItem Text="@LM.Get("hrmMembersHeader")">
+                                    <RadzenGrid AllowFiltering="true" AllowPaging="true" PageSize="20" Count="@_countAuthUsers" AllowSorting="true" Data="@_authUsersList" TItem="WebUserItem"
+                                                LoadData="@LoadAuthUsers" Style="height: 640px;" RowDoubleClick="async args=> await InspectCharacter(args, UserStatusEnum.Authed)"
+                                                @ref="_authedUsersGrid">
+                                        <Columns>
+                                            <RadzenGridColumn TItem="WebUserItem" Property="IconUrl" Filterable="false" Sortable="false" Width="90px">
+                                                <Template Context="order">
+                                                    <RadzenImage Path="@order.IconUrl" Style="width: 64px; height: 64px; display: block" />
+                                                </Template>
+                                            </RadzenGridColumn>
+                                            <RadzenGridColumn TItem="WebUserItem" Property="CharacterName">
+                                                <Template Context="order">
+                                                    <p>
+                                                        <RadzenLabel Text="@order.CharacterName" Style="font-weight: bold"></RadzenLabel>
+                                                        <br>
+                                                        <RadzenLabel Text="@order.CorporationName"></RadzenLabel>
+                                                        <br>
+                                                        <RadzenLabel Text="@order.AllianceName"></RadzenLabel>
+                                                    </p>
+                                                </Template>
+                                            </RadzenGridColumn>
+                                            <RadzenGridColumn TItem="WebUserItem" Property="CreateDate" Width="120px">
+                                                <Template Context="order">
+                                                    @(order.RegDate.ToString("dd.MM.yyyy"))
+                                                </Template>
+                                            </RadzenGridColumn>
+                                            @if (_access.CanKickUsers)
+                                            {
+                                                <RadzenGridColumn TItem="WebUserItem" Bubble="false" Filterable="false" Sortable="false" TextAlign="TextAlign.Center"
+                                                                  Width="60px">
+                                                    <Template Context="order">
+                                                        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="async () => await DeleteAuthedUser(order, UserStatusEnum.Authed)"
+                                                                      Attributes="@_buttonAttributes">
+                                                        </RadzenButton>
+                                                    </Template>
+                                                </RadzenGridColumn>
+                                            }
+                                        </Columns>
+                                    </RadzenGrid>
                                     @if (_authUsersList == null)
                                     {
-                                        <p><em>@LM.Get("webLoading")</em></p>
+                                        <RadzenLabel Text="@LM.Get("webLoading")" Class="hrmLoadingTabText" />
                                     }
-                                    else
-                                    {
-                                        <RadzenGrid AllowFiltering="true" AllowPaging="true" PageSize="20" Count="@_countAuthUsers" AllowSorting="true" Data="@_authUsersList" TItem="WebUserItem"
-                                                    LoadData="@LoadAuthUsers" Style="height: 640px;">
-                                            <Columns>
-                                                <RadzenGridColumn TItem="WebUserItem" Property="IconUrl" Filterable="false" Sortable="false" Width="90px">
-                                                    <Template Context="order">
-                                                        <RadzenImage Path="@order.IconUrl" Style="width: 64px; height: 64px; display: block" Click="() => OnMemberClick(order)"/>
-                                                    </Template>
-                                                </RadzenGridColumn>
-                                                <RadzenGridColumn TItem="WebUserItem" Property="CharacterName">
-                                                    <Template Context="order">
-                                                        <p>
-                                                            <RadzenLabel Text="@order.CharacterName" Style="font-weight: bold"></RadzenLabel>
-                                                            <br>
-                                                            <RadzenLabel Text="@order.CorporationName"></RadzenLabel>
-                                                            <br>
-                                                            <RadzenLabel Text="@order.AllianceName"></RadzenLabel>
-                                                        </p>
-                                                    </Template>
-                                                </RadzenGridColumn>
-                                                <RadzenGridColumn TItem="WebUserItem" Property="CreateDate" Width="120px">
-                                                    <Template Context="order">
-                                                        @(order.RegDate.ToString("dd.MM.yyyy"))
-                                                    </Template>
-                                                </RadzenGridColumn>
-                                                @if (_access.CanKickUsers)
-                                                {
-                                                    <RadzenGridColumn TItem="WebUserItem" Bubble="false" Filterable="false" Sortable="false" TextAlign="TextAlign.Center"
-                                                                      Width="60px">
-                                                        <Template Context="order">
-                                                            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(args => DeleteAuthedUser(order).GetAwaiter().GetResult())">
-                                                            </RadzenButton>
-                                                        </Template>
-                                                    </RadzenGridColumn>
-                                                }
-                                            </Columns>
-                                        </RadzenGrid>
-                                    }
+
                                 </RadzenTabsItem>
                             }
                             @if (_access.IsAwaitingUsersVisible)
                             {
                                 <RadzenTabsItem Text="@LM.Get("hrmAwaitingHeader")">
+
+                                    <RadzenGrid AllowFiltering="true" AllowPaging="true" PageSize="20" Count="@_countAwaitingUsers" AllowSorting="true" Data="@_awaitingUsersList" TItem="WebUserItem"
+                                                LoadData="@LoadAwaitingUsers" @ref="_awaitingUsersGrid" Style="height: 640px;" RowDoubleClick="async args=> await InspectCharacter(args, UserStatusEnum.Awaiting)">
+                                        <Columns>
+                                            <RadzenGridColumn TItem="WebUserItem" Property="IconUrl" Filterable="false" Sortable="false" Width="90px">
+                                                <Template Context="order">
+                                                    <RadzenImage Path="@order.IconUrl" Style="width: 64px; height: 64px; display: block" />
+                                                </Template>
+                                            </RadzenGridColumn>
+                                            <RadzenGridColumn TItem="WebUserItem" Property="CharacterName">
+                                                <Template Context="order">
+                                                    <div class="row">
+                                                        <div class="col">
+                                                            <p>
+                                                                <RadzenLabel Text="@order.CharacterName" Style="font-weight: bold"></RadzenLabel>
+                                                                <br>
+                                                                <RadzenLabel Text="@order.CorporationName"></RadzenLabel>
+                                                                <br>
+                                                                <RadzenLabel Text="@order.AllianceName"></RadzenLabel>
+                                                            </p>
+                                                        </div>
+                                                        <div class="col">
+                                                            <p>
+                                                            <p></p>
+                                                            <p class="text-right">
+                                                                @if (order.HasNoToken)
+                                                                {
+                                                                    <RadzenIcon Icon="warning" Style="color: yellowgreen;" Attributes="@(new Dictionary<string, object> {{"title", LM.Get("hrmTooltipNoESI")}})"></RadzenIcon>
+                                                                }
+                                                                @if (order.HasInvalidToken)
+                                                                {
+                                                                    <RadzenIcon Icon="vpn_key" Style="color: red;" Attributes="@(new Dictionary<string, object> {{"title", LM.Get("hrmTooltipInvalidESIToken")}})"></RadzenIcon>
+                                                                }
+                                                            </p>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </Template>
+                                            </RadzenGridColumn>
+                                            @if (_access.CanKickUsers)
+                                            {
+                                                <RadzenGridColumn TItem="WebUserItem" Bubble="false" Filterable="false" Sortable="false" TextAlign="TextAlign.Center"
+                                                                  Width="60px">
+                                                    <Template Context="order">
+                                                        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="async () => await DeleteAuthedUser(order, UserStatusEnum.Awaiting)"
+                                                                      Attributes="@_buttonAttributes">
+                                                        </RadzenButton>
+                                                    </Template>
+                                                </RadzenGridColumn>
+                                            }
+                                        </Columns>
+                                    </RadzenGrid>
                                     @if (_awaitingUsersList == null)
                                     {
-                                        <p><em>@LM.Get("webLoading")</em></p>
-                                    }
-                                    else
-                                    {
-                                        <RadzenGrid AllowFiltering="true" AllowPaging="true" PageSize="20" Count="@_countAwaitingUsers" AllowSorting="true" Data="@_awaitingUsersList" TItem="WebUserItem"
-                                                    LoadData="@LoadAwaitingUsers" @ref="_awaitingUsersGrid" Style="height: 640px;">
-                                            <Columns>
-                                                <RadzenGridColumn TItem="WebUserItem" Property="IconUrl" Filterable="false" Sortable="false" Width="90px">
-                                                    <Template Context="order">
-                                                        <RadzenImage Path="@order.IconUrl" Style="width: 64px; height: 64px; display: block"/>
-                                                    </Template>
-                                                </RadzenGridColumn>
-                                                <RadzenGridColumn TItem="WebUserItem" Property="CharacterName">
-                                                    <Template Context="order">
-                                                        <p>
-                                                            <RadzenLabel Text="@order.CharacterName" Style="font-weight: bold"></RadzenLabel>
-                                                            <br>
-                                                            <RadzenLabel Text="@order.CorporationName"></RadzenLabel>
-                                                            <br>
-                                                            <RadzenLabel Text="@order.AllianceName"></RadzenLabel>
-                                                        </p>
-                                                    </Template>
-                                                </RadzenGridColumn>
-                                                @if (_access.CanKickUsers)
-                                                {
-                                                    <RadzenGridColumn TItem="WebUserItem" Bubble="false" Filterable="false" Sortable="false" TextAlign="TextAlign.Center"
-                                                                      Width="60px">
-                                                        <Template Context="order">
-                                                            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(args => DeleteAuthedUser(order))">
-                                                            </RadzenButton>
-                                                        </Template>
-                                                    </RadzenGridColumn>
-                                                }
-                                            </Columns>
-                                        </RadzenGrid>
+                                        <RadzenLabel Text="@LM.Get("webLoading")" Class="hrmLoadingTabText" />
                                     }
                                 </RadzenTabsItem>
                             }
                             @if (_access.IsDumpedUsersVisible)
                             {
                                 <RadzenTabsItem Text="@LM.Get("hrmDumpHeader")">
+
+                                    <RadzenGrid AllowFiltering="true" AllowPaging="true" PageSize="20" Count="@_countDumpUsers" AllowSorting="true" Data="@_dumpUsersList" TItem="WebUserItem"
+                                                LoadData="@LoadDumpedUsers" @ref="_dumpedUsersGrid" Style="height: 640px;" RowDoubleClick="async args=> await InspectCharacter(args, UserStatusEnum.Dumped)">
+                                        <Columns>
+                                            <RadzenGridColumn TItem="WebUserItem" Property="IconUrl" Filterable="false" Sortable="false" Width="90px">
+                                                <Template Context="order">
+                                                    <RadzenImage Path="@order.IconUrl" Style="width: 64px; height: 64px; display: block" />
+                                                </Template>
+                                            </RadzenGridColumn>
+                                            <RadzenGridColumn TItem="WebUserItem" Property="CharacterName">
+                                                <Template Context="order">
+                                                    <p>
+                                                        <RadzenLabel Text="@order.CharacterName" Style="font-weight: bold"></RadzenLabel>
+                                                        <br>
+                                                        <RadzenLabel Text="@order.CorporationName"></RadzenLabel>
+                                                        <br>
+                                                        <RadzenLabel Text="@order.AllianceName"></RadzenLabel>
+                                                    </p>
+                                                </Template>
+                                            </RadzenGridColumn>
+                                            @if (_access.CanKickUsers || _access.CanMoveToSpies)
+                                            {
+                                                <RadzenGridColumn TItem="WebUserItem" Bubble="false" Filterable="false" Sortable="false" TextAlign="TextAlign.Center"
+                                                                  Width="60px">
+                                                    <Template Context="order">
+                                                        <div class="row">
+                                                            @if (_access.CanRestoreDumped)
+                                                            {
+                                                                <div class="col">
+                                                                    <RadzenButton ButtonStyle="ButtonStyle.Primary" Icon="restore_from_trash" Size="ButtonSize.Small" Click="async () => await RestoreCharacterAuth(order, UserStatusEnum.Dumped)"
+                                                                                  Attributes="@(new Dictionary<string, object> {{"title", LM.Get("hrmRestoreButtonTooltip")}})">
+                                                                    </RadzenButton>
+                                                                </div>
+                                                            }
+                                                            @if (_access.CanMoveToSpies && order.HasGoodToken)
+                                                            {
+                                                                <div class="col">
+                                                                    <RadzenButton ButtonStyle="ButtonStyle.Secondary" Icon="supervised_user_circle" Size="ButtonSize.Small" Click="async () => await MoveToSpies(order, UserStatusEnum.Dumped)"
+                                                                                  Attributes="@(new Dictionary<string, object> {{"title", LM.Get("hrmSpyButtonTooltip")}})">
+                                                                    </RadzenButton>
+                                                                </div>
+                                                            }
+                                                            @if (_access.CanKickUsers)
+                                                            {
+                                                                <div class="col">
+                                                                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="async () => await DeleteAuthedUser(order, UserStatusEnum.Dumped)"
+                                                                                  Attributes="@_dumpButtonAttributes">
+                                                                    </RadzenButton>
+                                                                </div>
+                                                            }
+                                                        </div>
+                                                    </Template>
+                                                </RadzenGridColumn>
+                                            }
+                                        </Columns>
+                                    </RadzenGrid>
                                     @if (_dumpUsersList == null)
                                     {
-                                        <p><em>@LM.Get("webLoading")</em></p>
-                                    }
-                                    else
-                                    {
-                                        <RadzenGrid AllowFiltering="true" AllowPaging="true" PageSize="20" Count="@_countDumpUsers" AllowSorting="true" Data="@_dumpUsersList" TItem="WebUserItem"
-                                                    LoadData="@LoadDumpedUsers" @ref="_dumpedUsersGrid" Style="height: 640px;">
-                                            <Columns>
-                                                <RadzenGridColumn TItem="WebUserItem" Property="IconUrl" Filterable="false" Sortable="false" Width="90px">
-                                                    <Template Context="order">
-                                                        <RadzenImage Path="@order.IconUrl" Style="width: 64px; height: 64px; display: block"/>
-                                                    </Template>
-                                                </RadzenGridColumn>
-                                                <RadzenGridColumn TItem="WebUserItem" Property="CharacterName">
-                                                    <Template Context="order">
-                                                        <p>
-                                                            <RadzenLabel Text="@order.CharacterName" Style="font-weight: bold"></RadzenLabel>
-                                                            <br>
-                                                            <RadzenLabel Text="@order.CorporationName"></RadzenLabel>
-                                                            <br>
-                                                            <RadzenLabel Text="@order.AllianceName"></RadzenLabel>
-                                                        </p>
-                                                    </Template>
-                                                </RadzenGridColumn>
-                                                @if (_access.CanKickUsers)
-                                                {
-                                                    <RadzenGridColumn TItem="WebUserItem" Bubble="false" Filterable="false" Sortable="false" TextAlign="TextAlign.Center"
-                                                                      Width="60px">
-                                                        <Template Context="order">
-                                                            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(args => DeleteAuthedUser(order))">
-                                                            </RadzenButton>
-                                                        </Template>
-                                                    </RadzenGridColumn>
-                                                }
-                                            </Columns>
-                                        </RadzenGrid>
+                                        <RadzenLabel Text="@LM.Get("webLoading")" Class="hrmLoadingTabText" />
                                     }
                                 </RadzenTabsItem>
                             }
                             @if (_access.IsSpyUsersVisible)
                             {
                                 <RadzenTabsItem Text="@LM.Get("hrmSpiesHeader")">
+
+                                    <RadzenGrid AllowFiltering="true" AllowPaging="true" PageSize="20" Count="@_countSpyUsers" AllowSorting="true" Data="@_spyUsersList" TItem="WebUserItem"
+                                                LoadData="@LoadSpyUsers" @ref="_spyUsersGrid" Style="height: 640px;" RowDoubleClick="async args=> await InspectCharacter(args, UserStatusEnum.Spying)">
+                                        <Columns>
+                                            <RadzenGridColumn TItem="WebUserItem" Property="IconUrl" Filterable="false" Sortable="false" Width="90px">
+                                                <Template Context="order">
+                                                    <RadzenImage Path="@order.IconUrl" Style="width: 64px; height: 64px; display: block" />
+                                                </Template>
+                                            </RadzenGridColumn>
+                                            <RadzenGridColumn TItem="WebUserItem" Property="CharacterName">
+                                                <Template Context="order">
+                                                    <p>
+                                                        <RadzenLabel Text="@order.CharacterName" Style="font-weight: bold"></RadzenLabel>
+                                                        <br>
+                                                        <RadzenLabel Text="@order.CorporationName"></RadzenLabel>
+                                                        <br>
+                                                        <RadzenLabel Text="@order.AllianceName"></RadzenLabel>
+                                                    </p>
+                                                </Template>
+                                            </RadzenGridColumn>
+                                            @if (_access.CanKickUsers)
+                                            {
+                                                <RadzenGridColumn TItem="WebUserItem" Bubble="false" Filterable="false" Sortable="false" TextAlign="TextAlign.Center"
+                                                                  Width="60px">
+                                                    <Template Context="order">
+                                                        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="async () => await DeleteAuthedUser(order, UserStatusEnum.Spying)"
+                                                                      Attributes="@_buttonAttributes">
+                                                        </RadzenButton>
+                                                    </Template>
+                                                </RadzenGridColumn>
+                                            }
+                                        </Columns>
+                                    </RadzenGrid>
                                     @if (_spyUsersList == null)
                                     {
-                                        <p><em>@LM.Get("webLoading")</em></p>
-                                    }
-                                    else
-                                    {
-                                        <RadzenGrid AllowFiltering="true" AllowPaging="true" PageSize="20" Count="@_countSpyUsers" AllowSorting="true" Data="@_spyUsersList" TItem="WebUserItem"
-                                                    LoadData="@LoadSpyUsers" @ref="_spyUsersGrid" Style="height: 640px;">
-                                            <Columns>
-                                                <RadzenGridColumn TItem="WebUserItem" Property="IconUrl" Filterable="false" Sortable="false" Width="90px">
-                                                    <Template Context="order">
-                                                        <RadzenImage Path="@order.IconUrl" Style="width: 64px; height: 64px; display: block"/>
-                                                    </Template>
-                                                </RadzenGridColumn>
-                                                <RadzenGridColumn TItem="WebUserItem" Property="CharacterName">
-                                                    <Template Context="order">
-                                                        <p>
-                                                            <RadzenLabel Text="@order.CharacterName" Style="font-weight: bold"></RadzenLabel>
-                                                            <br>
-                                                            <RadzenLabel Text="@order.CorporationName"></RadzenLabel>
-                                                            <br>
-                                                            <RadzenLabel Text="@order.AllianceName"></RadzenLabel>
-                                                        </p>
-                                                    </Template>
-                                                </RadzenGridColumn>
-                                                @if (_access.CanKickUsers)
-                                                {
-                                                    <RadzenGridColumn TItem="WebUserItem" Bubble="false" Filterable="false" Sortable="false" TextAlign="TextAlign.Center"
-                                                                      Width="60px">
-                                                        <Template Context="order">
-                                                            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(args => DeleteAuthedUser(order))">
-                                                            </RadzenButton>
-                                                        </Template>
-                                                    </RadzenGridColumn>
-                                                }
-                                            </Columns>
-                                        </RadzenGrid>
+                                        <RadzenLabel Text="@LM.Get("webLoading")" Class="hrmLoadingTabText" />
                                     }
                                 </RadzenTabsItem>
                             }
@@ -210,6 +249,7 @@
     private RadzenGrid<WebUserItem> _awaitingUsersGrid;
     private RadzenGrid<WebUserItem> _dumpedUsersGrid;
     private RadzenGrid<WebUserItem> _spyUsersGrid;
+    private RadzenGrid<WebUserItem> _authedUsersGrid;
 
     private HRMAccessFilter _access = new HRMAccessFilter();
     private HRMModule _module;
@@ -337,18 +377,137 @@ var user = new WebAuthUserData(new AuthUserEntity { CharacterId = 1731524545 }, 
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task DeleteAuthedUser(WebUserItem order)
+    private async Task DeleteAuthedUser(WebUserItem order, UserStatusEnum type)
     {
-        if (await Modal.ShowConfirm(LM.Get("ConfirmDelete"), LM.Get("webDeleteSelectedEntry")))
+        var question = type != UserStatusEnum.Dumped && SettingsManager.Settings.HRMModule.UseDumpForMembers ? LM.Get("webHrmDumpUserQuestion")
+            : LM.Get("webDeleteSelectedEntry");
+
+        if (await Modal.ShowConfirm(LM.Get("ConfirmDelete"), question))
+        {
             await _module.WebDeleteUser(order);
+
+            await RemoveCharFromLists(order, type);
+            //add char to dump if it is enabled
+            if (type != UserStatusEnum.Dumped && SettingsManager.Settings.HRMModule.UseDumpForMembers)
+                await AddCharToList(order, UserStatusEnum.Dumped);
+        }
     }
 
-    private void OnMemberClick(object value)
+    private async Task MoveToSpies(WebUserItem order, UserStatusEnum from)
+    {
+        if (await Modal.ShowConfirm(LM.Get("webWarning"), LM.Get("hrmMoveToSpiesConfirm")))
+        {
+            await _module.WebMoveToSpies(order);
+
+            await RemoveCharFromLists(order, from);
+            //add char to spies if it is enabled
+            await AddCharToList(order, UserStatusEnum.Spying);
+        }
+    }
+
+    private async Task RestoreCharacterAuth(WebUserItem order, UserStatusEnum from)
+    {
+        if (await Modal.ShowConfirm(LM.Get("webWarning"), LM.Get("hrmRestoreConfirm")))
+        {
+            var to = await _module.WebRestoreAuth(order);
+
+            await RemoveCharFromLists(order, from);
+            await AddCharToList(order, to);
+        }
+    }
+
+    private async Task InspectCharacter(WebUserItem value, UserStatusEnum type)
     {
         var prms = new ModalParameters();
         prms.Add("MemberData", value);
-        var o = new ModalOptions { DisableBackgroundCancel = true, Animation = ModalAnimation.FadeIn(1), HideHeader = true, ContentScrollable = true };
-        Modal.Show<InspectChar>("Inspection", prms, o);
+        var o = new ModalOptions { DisableBackgroundCancel = true, HideHeader = true, ContentScrollable = true };
+        var result = await Modal.Show<InspectChar>("Inspection", prms, o).Result;
+
+        //if we deleted char from inspect window
+        if (!result.Cancelled && !(bool)result.Data)
+        {
+            await RemoveCharFromLists(value, type);
+            //add char to dump if it is enabled
+            if (type != UserStatusEnum.Dumped && SettingsManager.Settings.HRMModule.UseDumpForMembers)
+                await AddCharToList(value, UserStatusEnum.Dumped);
+        }
     }
+
+    private async Task AddCharToList(WebUserItem value, UserStatusEnum type)
+    {
+        switch (type)
+        {
+            case UserStatusEnum.Awaiting:
+                if (_awaitingUsersList != null)
+                {
+                    _awaitingUsersList.Add(value);
+                    _countAwaitingUsers = _awaitingUsersList.Count;
+                }
+                break;
+            case UserStatusEnum.Authed:
+                if (_authUsersList != null)
+                {
+                    _authUsersList.Add(value);
+                    _countAuthUsers = _authUsersList.Count;
+                }
+                break;
+            case UserStatusEnum.Dumped:
+                if (_dumpUsersList != null)
+                {
+                    _dumpUsersList.Add(value);
+                    _countDumpUsers = _dumpUsersList.Count;
+                }
+                break;
+            case UserStatusEnum.Spying:
+                if (_spyUsersList != null)
+                {
+                    _spyUsersList.Add(value);
+                    _countSpyUsers = _spyUsersList.Count;
+                }
+                break;
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    /// <summary>
+    /// Remove character from all lists
+    /// </summary>
+    /// <param name="value">Character</param>
+    /// <param name="type">Type of list the character is from</param>
+    private async Task RemoveCharFromLists(WebUserItem value, UserStatusEnum type)
+    {
+        switch (type)
+        {
+            case UserStatusEnum.Awaiting:
+                _awaitingUsersList?.RemoveAll(a => a.Id == value.Id);
+                _countAwaitingUsers = _awaitingUsersList?.Count ?? 0;
+                break;
+            case UserStatusEnum.Authed:
+                _authUsersList?.RemoveAll(a => a.Id == value.Id);
+                _countAuthUsers = _authUsersList?.Count ?? 0;
+                break;
+            case UserStatusEnum.Dumped:
+                _dumpUsersList?.RemoveAll(a => a.Id == value.Id);
+                _countDumpUsers = _dumpUsersList?.Count ?? 0;
+                break;
+            case UserStatusEnum.Spying:
+                _spyUsersList?.RemoveAll(a => a.Id == value.Id);
+                _countSpyUsers = _spyUsersList?.Count ?? 0;
+                break;
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private IReadOnlyDictionary<string, object> _dumpButtonAttributes = new Dictionary<string, object>
+{
+        {"title", LM.Get("hrmDeleteAuthButtonTooltip")}
+    };
+
+    private IReadOnlyDictionary<string, object> _buttonAttributes = new Dictionary<string, object>
+{
+        {"title", (LM.Get(SettingsManager.Settings.HRMModule.UseDumpForMembers ? "hrmDumpAuthButtonTooltip" : "hrmDeleteAuthButtonTooltip"))}
+    };
+
 
 }
