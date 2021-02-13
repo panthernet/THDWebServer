@@ -1,2 +1,5 @@
-﻿Version 0.1.0
+﻿Version 0.2.0
++ Fixed timers auth update
+
+Version 0.1.0
 + Initial pre-release

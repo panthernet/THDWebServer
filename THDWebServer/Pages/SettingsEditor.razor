@@ -15,8 +15,8 @@
             {
                 <RadzenTabsItem Text="@LM.Get("webSettingsSimpleAuthTabName")">
                     <RadzenButton Icon="add_circle_outline" style="margin-bottom: 10px" Text="@LM.Get("webSettingsAddEntryButton")" Click="@InsertRow" />
-                    <RadzenGrid ColumnWidth="150px" AllowFiltering="true" AllowPaging="true" PageSize="4" AllowSorting="true" Data="@_authList" TItem="SimplifiedAuthEntity"
-                                @ref="_authListGrid">
+                    <RadzenGrid ColumnWidth="150px" AllowFiltering="true" AllowPaging="true" PageSize="20" AllowSorting="true" Data="@_authList" TItem="SimplifiedAuthEntity"
+                                Count="@_countAuths" @ref="_authListGrid">
                         <Columns>
                             <RadzenGridColumn TItem="SimplifiedAuthEntity" Property="Name" Title="@LM.Get("webSettingsSaColumnName")">
                                 <EditTemplate Context="order">
@@ -40,8 +40,8 @@
                                 </Template>
                                 <EditTemplate Context="order">
                                     <RadzenDropDown @bind-Value="order.RolesList" Data="@_authRolesList2" Style="width: 100%" Multiple="true"
-                                                     AllowClear="true" Name="RolesName" TextProperty="Name" ValueProperty="Name"
-                                                     FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Placeholder="Select...">
+                                                    AllowClear="true" Name="RolesName" TextProperty="Name" ValueProperty="Name"
+                                                    FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Placeholder="Select...">
                                         <!--  -->
                                     </RadzenDropDown>
                                 </EditTemplate>
@@ -76,8 +76,8 @@
             {
                 <RadzenTabsItem Text="@LM.Get("webSettingsTimersTabName")">
                     <RadzenButton Icon="add_circle_outline" style="margin-bottom: 10px" Text="@LM.Get("webSettingsAddEntryButton")" Click="@InsertTimersRow" />
-                    <RadzenGrid ColumnWidth="150px" AllowFiltering="true" AllowPaging="true" PageSize="4" AllowSorting="true" Data="@_timersList" TItem="TiData"
-                                @ref="_timersListGrid">
+                    <RadzenGrid ColumnWidth="150px" AllowFiltering="true" AllowPaging="true" PageSize="20" AllowSorting="true" Data="@_timersList" TItem="TiData"
+                                Count="@_countTimers" @ref="_timersListGrid">
                         <Columns>
                             <RadzenGridColumn TItem="TiData" Property="Name" Title="@LM.Get("webSettingsSaColumnName")">
                                 <EditTemplate Context="order">
@@ -147,6 +147,9 @@
     private List<TiData> _timersList;
     private WebSettingsModule _module;
 
+    private int _countTimers;
+    private int _countAuths;
+
     public override async Task SetParametersAsync(ParameterView parameters)
     {
         await base.SetParametersAsync(parameters);
@@ -185,18 +188,20 @@
         if (_access.CanEditSimplifiedAuth)
         {
             _authList = await SettingsManager.GetSimplifiedAuthData();
+            _countAuths = _authList?.Count ?? 0;
             _authGroupsList = _module.WebGetAuthGroupsList();
             //_authRolesList = .ToList();
             var counter = 0;
-            _authRolesList2 = _module.WebGetAuthRolesList()?.Select(a => new TestClass {Id = counter++, Name = a}).ToList();
+            _authRolesList2 = _module.WebGetAuthRolesList()?.Select(a => new TestClass { Id = counter++, Name = a }).ToList();
             if (_authRolesList2 == null)
             {
-                _authRolesList2 = new List<TestClass>{ new TestClass { Id = 0, Name = "Unknown"}};
+                _authRolesList2 = new List<TestClass> { new TestClass { Id = 0, Name = "Unknown" } };
             }
         }
         if (_access.CanEditTimers)
         {
             _timersList = _module.WebGetTimersAccessList();
+            _countTimers = _timersList?.Count ?? 0;
         }
 
         await base.OnInitializedAsync();
@@ -234,6 +239,7 @@
         else _authList.Add(order);
 
         await _module.WebSaveSimplifiedAuth(_authList);
+        _countAuths = _authList?.Count ?? 0;
         _editingAuthRow = null;
     }
 
@@ -251,6 +257,7 @@
         {
             _authList.Remove(order);
             await _module.WebSaveSimplifiedAuth(_authList);
+            _countAuths = _authList?.Count ?? 0;
         }
         else
         {
@@ -282,10 +289,10 @@
             return;
         }
         await _timersListGrid.UpdateRow(order);
-        //
         Replace(_timersList, order);
-
         await _module.WebSaveTimersAccess(_timersList);
+        _countTimers = _timersList?.Count ?? 0;
+
         _editingTimersRow = null;
     }
 
@@ -309,6 +316,7 @@
         {
             _timersList.Remove(order);
             await _module.WebSaveTimersAccess(_timersList);
+            _countTimers = _timersList?.Count ?? 0;
         }
         else
         {
@@ -329,4 +337,5 @@
         else list.Add(value);
     }
     #endregion
+
 }
